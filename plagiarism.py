@@ -1,10 +1,11 @@
 from pre_proc_txt import create_txt
 from test import test
 
-folder = 'Lab1'
+# Вкалази ОБОВ'ЯЗКОВО папку з файлами для перевірки
+folder = 'Example'
 
-path = 'new_files/' + folder
-path_txt = 'new_txt/' + folder
+path = 'New_files/' + folder
+path_txt = 'New_txt/' + folder
 
 SIZE_PLAG = 10
 path_res = "Results/" + folder
