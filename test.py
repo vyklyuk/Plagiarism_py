@@ -2,11 +2,8 @@ from difflib import SequenceMatcher
 import glob
 import os
 
-SIZE_PLAG = 500
-path_res = "Results"
 
-
-def Find_Matches(text_test, fn_db):
+def Find_Matches(text_test, fn_db, SIZE_PLAG):
     f_db = open(fn_db, encoding='utf-8', errors='ignore')
     text_db = f_db.read()
     f_db.close()
@@ -34,44 +31,46 @@ def Find_Matches(text_test, fn_db):
         res += "Сумарний плагіат: " + str(pr) + "%\n"
     return res, ch
 
-
+def test(path_txt, path_res, path_DataBase, SIZE_PLAG):
 # створення папки для нових файлів
-if not os.path.exists("./" + path_res):
-    try:
-        os.mkdir("./" + path_res)
-    except OSError:
-        print("Помилка створення папки %і failed", path_res)
-        exit(-1)
-    else:
-        print("Папка %s успішно створена", path_res)
+    if not os.path.exists("./" + path_res):
+        try:
+            os.mkdir("./" + path_res.split('/')[0])
+            os.mkdir("./" + path_res)
+        except OSError:
+            print("Помилка створення папки {0} ".format(path_res))
+            exit(-1)
+        else:
+            print("Папка {0} успішно створена".format(path_res))
 
-path_DataBase = 'DataBase/'
-path_test = 'new_txt/'
-files_DB = [f for f in glob.glob(path_DataBase + "**/*.txt", recursive=True)]
-files_test = [f for f in glob.glob(path_test + "**/*.txt", recursive=True)]
+    files_DB = [f for f in glob.glob(path_DataBase + "**/*.txt", recursive=True)]
+    files_test = [f for f in glob.glob(path_txt + "**/*.txt", recursive=True)]
 
-len_DB = len(files_DB)
-for f_t in files_test:
-    f_test = open(f_t, encoding='utf-8', errors='ignore')
-    text_test = f_test.read()
-    f_test.close()
-    print(f_t)
-    res_plag = f_t + "\n"
-    ch_plag = set()
-    res_plag_memo = ""
-    for i, f_DB in enumerate(files_DB):
-        print("\r", "Перевірено на:", i * 100 // len_DB, "%", "Звіряю з:", f_DB,
-        '                   ', end='')
-        res, ch = Find_Matches(text_test, f_DB)
-        ch_plag = ch_plag.union(ch)
-        res_plag_memo += res
+    all_files = files_test + files_DB
 
-    pr = len(ch_plag) * 100 // len(text_test)
-    res_plag += "Плагіат: " + str(pr) + "%\n"
-    res_plag += "Унікальність: " + str(100 - pr) + "%\n\n"
+    len_DB = len(all_files) - 1
+    for f_t in files_test:
+        f_test = open(f_t, encoding='utf-8', errors='ignore')
+        text_test = f_test.read()
+        f_test.close()
+        print(f_t)
+        res_plag = f_t + "\n"
+        ch_plag = set()
+        res_plag_memo = ""
+        for i, f_DB in enumerate(all_files):
+            if f_DB != f_t:
+                print("\r", "Перевірено на:", i * 100 // len_DB, "%", "Звіряю з:", f_DB,
+                '                   ', end='')
+                res, ch = Find_Matches(text_test, f_DB, SIZE_PLAG)
+                ch_plag = ch_plag.union(ch)
+                res_plag_memo += res
 
-    res_plag += res_plag_memo
-    print("\r", "Перевірено на: 100%")
-    file = open(path_res + f_t.replace(path_test, '/'), "w", encoding='utf-8')
-    file.writelines(res_plag)
-    file.close()
+        pr = len(ch_plag) * 100 // len(text_test)
+        res_plag += "Плагіат: " + str(pr) + "%\n"
+        res_plag += "Унікальність: " + str(100 - pr) + "%\n\n"
+
+        res_plag += res_plag_memo
+        print("\r", "Перевірено на: 100%")
+        file = open(path_res + f_t.replace(path_txt, '/'), "w", encoding='utf-8')
+        file.writelines(res_plag)
+        file.close()
