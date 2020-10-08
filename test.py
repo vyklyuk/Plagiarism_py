@@ -43,8 +43,8 @@ def test(path_txt, path_res, path_DataBase, SIZE_PLAG):
         else:
             print("Папка {0} успішно створена".format(path_res))
 
-    files_DB = [f for f in glob.glob(path_DataBase + "**/*.txt", recursive=True)]
-    files_test = [f for f in glob.glob(path_txt + "**/*.txt", recursive=True)]
+    files_DB = [f for f in glob.glob(path_DataBase + "/**/*.txt", recursive=True)]
+    files_test = [f for f in glob.glob(path_txt + "/**/*.txt", recursive=True)]
 
     all_files = files_test + files_DB
 
@@ -71,6 +71,17 @@ def test(path_txt, path_res, path_DataBase, SIZE_PLAG):
 
         res_plag += res_plag_memo
         print("\r", "Перевірено на: 100%")
+
+        f_txt = path_res + f_t.replace(path_txt, '/')
+        f_dir = f_txt[:f_txt.rfind("/")]
+
+        if not os.path.exists("./" + f_dir):
+            try:
+                os.mkdir("./" + f_dir)
+            except OSError:
+                print("Помилка створення папки {0} ".format(path_txt))
+                exit(-1)
+
         file = open(path_res + f_t.replace(path_txt, '/'), "w", encoding='utf-8')
         file.writelines(res_plag)
         file.close()
