@@ -1,6 +1,7 @@
 from difflib import SequenceMatcher
 import glob
-import os
+import my_save
+import pandas as pd
 
 
 def Find_Matches(text_test, fn_db, SIZE_PLAG):
@@ -32,16 +33,6 @@ def Find_Matches(text_test, fn_db, SIZE_PLAG):
     return res, ch
 
 def test(path_txt, path_res, path_DataBase, SIZE_PLAG):
-# створення папки для нових файлів
-    if not os.path.exists("./" + path_res):
-        try:
-            os.mkdir("./" + path_res.split('/')[0])
-            os.mkdir("./" + path_res)
-        except OSError:
-            print("Помилка створення папки {0} ".format(path_res))
-            exit(-1)
-        else:
-            print("Папка {0} успішно створена".format(path_res))
 
     files_DB = [f for f in glob.glob(path_DataBase + "/**/*.txt", recursive=True)]
     files_test = [f for f in glob.glob(path_txt + "/**/*.txt", recursive=True)]
@@ -49,6 +40,7 @@ def test(path_txt, path_res, path_DataBase, SIZE_PLAG):
     all_files = files_test + files_DB
 
     len_DB = len(all_files) - 1
+    df = pd.DataFrame(columns=['File', 'Плагіат', 'Унікальність'])
     for f_t in files_test:
         f_test = open(f_t, encoding='utf-8', errors='ignore')
         text_test = f_test.read()
@@ -68,20 +60,10 @@ def test(path_txt, path_res, path_DataBase, SIZE_PLAG):
         pr = len(ch_plag) * 100 // len(text_test)
         res_plag += "Плагіат: " + str(pr) + "%\n"
         res_plag += "Унікальність: " + str(100 - pr) + "%\n\n"
-
+        df = df.append({'File': f_t, 'Плагіат': pr, 'Унікальність': 100 - pr}, ignore_index=True)
         res_plag += res_plag_memo
         print("\r", "Перевірено на: 100%")
 
-        f_txt = path_res + f_t.replace(path_txt, '/')
-        f_dir = f_txt[:f_txt.rfind("/")]
-
-        if not os.path.exists("./" + f_dir):
-            try:
-                os.mkdir("./" + f_dir)
-            except OSError:
-                print("Помилка створення папки {0} ".format(path_txt))
-                exit(-1)
-
-        file = open(path_res + f_t.replace(path_txt, '/'), "w", encoding='utf-8')
-        file.writelines(res_plag)
-        file.close()
+        my_save.save_txt(path_res + f_t.replace(path_txt, '/'), res_plag)
+    df= df.sort_values('Плагіат', ascending=False)
+    df.to_excel('Results.xlsx', 'Results', index=False)

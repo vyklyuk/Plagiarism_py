@@ -2,7 +2,7 @@ from pre_proc_txt import create_txt
 from test import test
 
 # Вкалази ОБОВ'ЯЗКОВО папку з файлами для перевірки
-folder = 'Example'
+folder = 'Lab1'
 
 path = 'New_files/' + folder
 path_txt = 'New_txt/' + folder
